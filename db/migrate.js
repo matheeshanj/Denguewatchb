@@ -66,7 +66,10 @@ async function migrate() {
     await pool.query(
       `INSERT INTO district_stats (district, province, cases, deaths, pct_of_max)
        VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (district) DO NOTHING`,
+       ON CONFLICT (district) DO UPDATE SET
+         province = excluded.province, cases = excluded.cases,
+         deaths = excluded.deaths, pct_of_max = excluded.pct_of_max,
+         updated_at = now()`,
       [district, province, cases, deaths, pct]
     );
   }
@@ -87,7 +90,9 @@ async function migrate() {
     await pool.query(
       `INSERT INTO province_stats (province, cases, deaths, severity)
        VALUES ($1, $2, $3, $4)
-       ON CONFLICT (province) DO NOTHING`,
+       ON CONFLICT (province) DO UPDATE SET
+         cases = excluded.cases, deaths = excluded.deaths,
+         severity = excluded.severity, updated_at = now()`,
       [province, cases, deaths, severity]
     );
   }
